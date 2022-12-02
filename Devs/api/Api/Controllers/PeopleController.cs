@@ -1,26 +1,30 @@
 namespace Api.Controllers;
 
+using Domain;
 using Microsoft.AspNetCore.Mvc;
+using Repository;
 
 [ApiController]
 [Route("api/v1/[controller]")]
 public class PeopleController : ControllerBase
 {
-    private readonly ILogger<PeopleController> _logger;
+    private readonly IPersonRepository personRepository;
 
-    public PeopleController(ILogger<PeopleController> logger)
+    public PeopleController(IPersonRepository personRepository)
     {
-        _logger = logger;
+        this.personRepository = personRepository;
     }
 
-    [HttpGet(Name = "GetPeople")]
-    public async Task<IActionResult> Get()
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
     {
-        var response = new
-        {
-            Success = true,
-            Data = "Alberth"
-        };
-        return Ok(response);
+        return Ok(await personRepository.GetPeople());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertPerson([FromBody] Person person)
+    {
+        return person == null ? BadRequest() : 
+            !ModelState.IsValid ? BadRequest(ModelState) : Ok(await personRepository.InsertPerson(person));
     }
 }
